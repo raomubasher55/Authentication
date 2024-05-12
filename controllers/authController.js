@@ -280,6 +280,11 @@ const gernateAccessToken = async(user)=>{
     return token;
 }
 
+const gernateRefreshToken = async(user)=>{
+    const token = jwt.sign(user,process.env.ACCESS_SECRET_TOKEN , {expiresIn: "6h"});
+    return token;
+}
+
 //loin user
 const loginUser =async (req ,res)=>{
     try {
@@ -315,11 +320,14 @@ const loginUser =async (req ,res)=>{
             })
         }
         const accessToken = await gernateAccessToken({user: userData});
+        const refreshToken = await gernateRefreshToken({user: userData});
+
         return res.status(200).json({
             success: true,
             message: "You logined successfully",
             user: userData,
-            accessToken: accessToken,
+            accessToken: accessToken, 
+            refreshToken:refreshToken,
             tokenType : "Bearer"
         })
     } catch (error) {
@@ -352,17 +360,14 @@ const updateProfile = async(req,res)=>{
     try {
         const {name ,  mobile} = req.body;
 
-        const data = {
-            name,
-            mobile,
-        }
+        const data = { name,mobile,}
 
         const user_id = req.user.user._id;
         if (req.file !== undefined) {
-            data.image = 'image/' + req.file.filename;
+            data.image = 'images/' + req.file.filename;
             const oldUser =  await userModel.findOne({_id: user_id});
             const oldFilePath = path.join(__dirname, '../public/'+oldUser.image);
-            deleteFile(oldFilePath)
+            deleteFile(oldFilePath);
         }
 
        const userData =  await userModel.findByIdAndUpdate({_id: user_id },{
@@ -376,12 +381,35 @@ const updateProfile = async(req,res)=>{
         })
     } catch (error) {
         return res.status(400).json({
-            success: false,
+            success: false, 
             message: error.message
         })
     }
 }
 
+const refreshToken = async(req ,res)=>{
+    try {
+        //User is saved in Logined middlewire so ,
+        const user_id =  req.user.user._id;
+
+        const userData = await userModel.findOne({_id: user_id});
+        const accessToken = await gernateAccessToken({user:userData});
+        const refreshToken = await gernateRefreshToken({user:userData});
+
+        return res.status(200).json({
+            success: true,
+            message:"Token Refreshed", 
+            userData: userData,
+            accessToken: accessToken,
+            refreshToken:refreshToken
+        })
+    } catch (error) {
+        return res.status(400).json({
+            success: false, 
+            message: error.message
+        })
+    }
+}
 
 
 module.exports = {
@@ -394,5 +422,6 @@ module.exports = {
     updatePassword,
     successTesetPassword,
     userProfile,
-    updateProfile
+    updateProfile,
+    refreshToken,
 }

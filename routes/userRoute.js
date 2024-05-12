@@ -41,5 +41,6 @@ const storage = multer.diskStorage({
 
   //authenticatied routes
   router.get('/profile' ,isLogined , userController.userProfile);
-  router.post('/updateprofile' , isLogined ,updateProfileValidator , upload.single('image') , userController.updateProfile )
+  router.post('/updateprofile' , isLogined ,updateProfileValidator , upload.single('image') , userController.updateProfile );
+  router.post('/refreshToken' ,isLogined, userController.refreshToken)
 module.exports = router;
