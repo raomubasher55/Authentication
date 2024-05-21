@@ -3,7 +3,7 @@ const router = express();
 const path = require('path');
 const multer = require('multer');
 const userController = require('../controllers/authController')
-const {signupValidator, loginValidator , sendMailVerificationValidator , passwordResetValidator , updateProfileValidator} = require('../helper/validator');
+const {signupValidator, loginValidator , sendMailVerificationValidator , passwordResetValidator , updateProfileValidator  , otpMailValidator , verifyOtpValidator} = require('../helper/validator');
 const mailer  = require('../helper/mailer');
 const isLogined = require('../middlewires/auth')
 router.use(express.json());
@@ -42,5 +42,10 @@ const storage = multer.diskStorage({
   //authenticatied routes
   router.get('/profile' ,isLogined , userController.userProfile);
   router.post('/updateprofile' , isLogined ,updateProfileValidator , upload.single('image') , userController.updateProfile );
-  router.post('/refreshToken' ,isLogined, userController.refreshToken)
+  router.post('/refreshToken' ,isLogined, userController.refreshToken);
+  router.get('/logout' ,isLogined, userController.logout);
+
+  //otp verification routes
+  router.post('/sendotp'  , otpMailValidator , userController.sendOTP )
+  router.post('/verifyotp', verifyOtpValidator , userController.verfiyOTP )
 module.exports = router;

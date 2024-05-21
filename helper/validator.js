@@ -50,3 +50,13 @@ exports.updateProfileValidator = [
         max: 10
     }),
 ];
+exports.otpMailValidator = [
+    check('email', 'Enter a valid email').isEmail().normalizeEmail({
+        gmail_remove_dots: true
+    }),
+];
+
+exports.verifyOtpValidator = [
+    check('user_id', 'User id is required').not().isEmpty(),
+    check('otp', 'OTP is required').not().isEmpty()
+];

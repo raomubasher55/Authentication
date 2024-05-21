@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+const blackListModel = require('../models/blackList');
+
 
 const verifyToken = async(req , res ,next)=>{
     const token = req.body.token || req.query.token || req.headers['authorization'];
@@ -12,7 +14,15 @@ const verifyToken = async(req , res ,next)=>{
     try {
             const bearer = token.split(" ");
             const bearerToken = bearer[1];
-        
+
+            const blackListToken  = await blackListModel.findOne({token:bearerToken});
+
+            if(blackListToken){
+               return res.status(400).json({
+                success:false,
+                message:"This session is expired please try again"
+            });
+            }
             const decodedData = jwt.verify(bearerToken , process.env.ACCESS_SECRET_TOKEN);
             req.user = decodedData;
     } catch (error) {
